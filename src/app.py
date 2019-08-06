@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 from authentication import *
+from database import *
 
 app = Flask(__name__)
 
@@ -13,7 +14,7 @@ def index():
 
 @app.route('/node')
 def node():
-    return 'Node page'
+    return 'Node Page'
 
 
 @app.route('/files')
@@ -21,9 +22,9 @@ def node():
 def files():
     file_id = request.args.get('id', '')
     if file_id == '':
-        return 'This is the file list'
+        return render_template('files.html')
     else:
-        return 'This is file with id: ' + file_id
+        return render_template('file.html', id=file_id)
 
 
 @app.route('/authenticate', methods=['GET', 'POST'])

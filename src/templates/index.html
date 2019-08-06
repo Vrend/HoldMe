@@ -13,7 +13,7 @@
         <br/>
         {% if session.logged_in %}
         <p>
-            <a href="#" class="btn btn-primary">View Files</a>
+            <a href="{{url_for('files')}}" class="btn btn-primary">View Files</a>
             &nbsp;&nbsp;
             <a href="{{url_for('deauthenticate')}}" class="btn btn-danger">Deauthenticate</a>
         </p>
