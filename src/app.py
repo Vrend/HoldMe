@@ -3,7 +3,6 @@ from authentication import *
 from database import *
 
 app = Flask(__name__)
-
 lock = ''
 
 
@@ -17,7 +16,7 @@ def node():
     return 'Node Page'
 
 
-@app.route('/files')
+@app.route('/files', method=['GET', 'POST'])
 @is_logged_in
 def files():
     file_id = request.args.get('id', '')
