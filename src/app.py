@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, session, flash, redirect, url_for
+from flask import Flask, request, render_template
 from authentication import *
 
 app = Flask(__name__)

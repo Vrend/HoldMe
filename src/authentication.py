@@ -1,6 +1,6 @@
 import sys
 from functools import wraps
-from flask import session, redirect, flash, url_for
+from flask import session, redirect, url_for
 
 
 # Wrappers for sessions
@@ -10,7 +10,6 @@ def is_logged_in(f):
         if 'logged_in' in session:
             return f(*args, **kwargs)
         else:
-            flash('Not logged in', 'danger')
             return redirect(url_for('index'))
     return wrap
 
