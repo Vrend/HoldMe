@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template
+from flask_socketio import SocketIO
 from authentication import *
 from database import *
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 lock = ''
 
 
@@ -46,7 +48,6 @@ def files():
 def authenticate():
     if request.method == 'POST':
         key = request.form['password']
-
         if key == lock:
             session['logged_in'] = True
             return redirect(url_for('index'))
@@ -70,5 +71,5 @@ def handle_404(error):
 if __name__ == '__main__':
     config = get_config()
     app.secret_key = config[0]
-    lock = config[1]
-    app.run(debug=config[2])
+    lock = config[1].strip()
+    socketio.run(app, debug=config[2])

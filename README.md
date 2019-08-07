@@ -7,6 +7,8 @@ Decentralized Storage - Inspired by Hivemind
 1. flask
 2. redis-py
 3. passlib
+4. eventlet
+5. flask-socketio
 
 ## How to Use
 
