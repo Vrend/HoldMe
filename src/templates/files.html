@@ -1,20 +1,22 @@
 {% extends 'core.html' %}
 
 {% block body %}
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<div class="jumbotron text-center">
-    <form method="post" action="">
-        <div class="form-group">
-            <label>Name</label>
-            <input type="text" name="name"/>
-            <input type="file" name="file"/>
-            <input type="submit" class="btn btn-primary" value="Upload">
-        </div>
-    </form>
-</div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="jumbotron text-center">
+        <form enctype="multipart/form-data" method="post" action="">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name"/>
+                <input type="file" name="file"/>
+                <input type="hidden" name="multi_files"/>
+                <input type="submit" class="btn btn-primary" value="Upload">
+            </div>
+        </form>
+    </div>
+    <a href="{{url_for('index')}}" class="btn btn-primary">Go Back</a>
 {% endblock %}

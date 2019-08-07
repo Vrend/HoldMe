@@ -16,9 +16,25 @@ def node():
     return 'Node Page'
 
 
-@app.route('/files', method=['GET', 'POST'])
+@app.route('/redis')
+def redis():
+    return test_redis()
+
+
+@app.route('/files', methods=['GET', 'POST'])
 @is_logged_in
 def files():
+    if request.method == 'POST':
+        if 'single_file' in request.form:
+            return render_template('files.html')
+        else:
+            file = request.files['file']
+            name = request.form['name']
+            if file.filename == '' or name == '':
+                return render_template('files.html')
+            push_file(name, file)
+            return render_template('files.html')
+
     file_id = request.args.get('id', '')
     if file_id == '':
         return render_template('files.html')
@@ -45,8 +61,14 @@ def deauthenticate():
     return redirect(url_for('index'))
 
 
+@app.errorhandler(404)
+def handle_404(error):
+    print(error)
+    return redirect(url_for('index'))
+
+
 if __name__ == '__main__':
     config = get_config()
     app.secret_key = config[0]
     lock = config[1]
-    app.run(debug=True)
+    app.run(debug=config[2])

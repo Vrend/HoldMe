@@ -14,6 +14,7 @@ def is_logged_in(f):
     return wrap
 
 
+# Grabs data from config file at startup
 def get_config():
     try:
         file = open('../config', 'r')
@@ -23,11 +24,17 @@ def get_config():
 
     secret = file.readline()
     lock = file.readline()
+    debug = file.readline()
 
-    if secret == '' or lock == '':
+    if secret == '' or lock == '' or debug == '':
         print('Config file not configured correctly, exiting...')
         sys.exit(1)
     else:
         print('Loading configuration...')
 
-    return [secret, lock]
+    if debug == 'true':
+        debug = True
+    else:
+        debug = False
+
+    return [secret, lock, debug]
