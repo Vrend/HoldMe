@@ -1,6 +1,7 @@
 import redis
 import base64
 import textwrap
+import json
 
 BLOCK_SIZE = 512
 
@@ -38,3 +39,10 @@ def get_available_nodes():
 def push_block(block, nodes):
     for node in nodes:
         print('pushing block' + block + 'to node' + node)
+
+
+def handle_response(res):
+    data = json.loads(res)
+    blocks = data['blocks']
+    for block_id, block_hash in blocks.items():
+        print('Block ID: ' + block_id + ' Hash: ' + block_hash)

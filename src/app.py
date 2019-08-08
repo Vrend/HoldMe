@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, send, emit
 from authentication import *
 from database import *
 
@@ -15,7 +15,7 @@ def index():
 
 @app.route('/node')
 def node():
-    return 'Node Page'
+    return render_template('node.html')
 
 
 @app.route('/redis')
@@ -60,6 +60,34 @@ def authenticate():
 def deauthenticate():
     session.clear()
     return redirect(url_for('index'))
+
+
+# Generic socket catchers
+@socketio.on('message')
+def handle_message(message):
+    send(message)
+    print('Received message: ' + message)
+
+
+@socketio.on('json')
+def handle_json(json):
+    send(json, json=True)
+    print('received json: ' + str(json))
+
+
+# Custom example
+@socketio.on('connection')
+def handle_my_custom_event(json):
+    print('received json: ' + str(json))
+
+
+@socketio.on('heartbeat_resp')
+def handle_heartbeat_resp(json):
+    handle_response(json)
+
+
+def heartbeat():
+    socketio.emit('heartbeat')
 
 
 @app.errorhandler(404)
