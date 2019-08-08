@@ -2,6 +2,7 @@ from flask import Flask, request, render_template
 from flask_socketio import SocketIO, send, emit
 from authentication import *
 from database import *
+import uuid
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -79,6 +80,16 @@ def handle_json(json):
 @socketio.on('connect')
 def handle_connect():
     print('Client Socket SID: ' + request.sid)
+
+
+@socketio.on('on_connect')
+def handle_on_connect(res):
+    data = res['id']
+    if data == 'none':
+        client_id = str(uuid.uuid1())
+        emit('give_uid', client_id)
+    else:
+        print(data)
 
 
 @socketio.on('disconnect')
