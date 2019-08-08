@@ -30,7 +30,7 @@ def push_file(name, password, file, socketio):
 
     for block in blocks:
         print(block)
-        push_block(block, get_available_nodes(), socketio)
+        push_block(block, 0, get_available_nodes(), socketio)
 
 
 def rebuild_file(password, blocks):
@@ -50,7 +50,7 @@ def test_encryption_decryption():
 
 def get_available_nodes():
     r = redis.Redis()
-    return r.hget('active_nodes')
+    return r.get('active_nodes')
 
 
 def add_node(uid, socket):
@@ -63,11 +63,11 @@ def update_node(uid, socket):
     r.hset('nodes', uid, socket)
 
 
-def push_block(block, nodes, socketio):
+def push_block(block, blockid, nodes, socketio):
     r = redis.Redis()
     for node in nodes:
         sock = r.hget('nodes', node)
-        socketio.emit('add_block', block, room=sock)
+        socketio.emit('add_block', {'id': blockid, 'data': block}, room=sock)
         print('pushing block' + block + 'to node' + node)
 
 
