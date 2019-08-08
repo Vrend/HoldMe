@@ -31,6 +31,11 @@ def redis():
     return test_redis()
 
 
+@app.route('/enc')
+def enc():
+    return test_encryption_decryption()
+
+
 @app.route('/files', methods=['GET', 'POST'])
 @is_logged_in
 def files():
@@ -40,9 +45,10 @@ def files():
         else:
             file = request.files['file']
             name = request.form['name']
-            if file.filename == '' or name == '':
+            password = request.form['password']
+            if file.filename == '' or name == '' or password == '':
                 return render_template('files.html')
-            push_file(name, file)
+            push_file(name, password, file)
             return render_template('files.html')
 
     file_id = request.args.get('id', '')
@@ -112,7 +118,7 @@ def handle_disconnect():
 def heartbeat():
     while True:
         time.sleep(5)
-        #print('Sending Heartbeat...')
+        # print('Sending Heartbeat...')
         socketio.emit('heartbeat')
 
 

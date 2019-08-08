@@ -1,6 +1,7 @@
 import redis
 import base64
 import textwrap
+from encryption import *
 
 BLOCK_SIZE = 512
 
@@ -22,13 +23,29 @@ def base64_to_file(string):
     return base64.b64decode(string)
 
 
-def push_file(name, file):
+def push_file(name, password, file):
     print('Pushing file...')
-    b64 = str(file_to_base64(file))
-    blocks = textwrap.wrap(b64, BLOCK_SIZE)
+    data = encrypt(password, file_to_base64(file))
+    blocks = textwrap.wrap(data.decode(), BLOCK_SIZE)
 
     for block in blocks:
+        print(block)
         push_block(block, get_available_nodes())
+
+
+def rebuild_file(password, blocks):
+    master = ''
+    for block in blocks:
+        master.join(block)
+    plaintext = decrypt(password, master.encode())
+    return base64_to_file(plaintext)
+
+
+def test_encryption_decryption():
+    plaintext = 'dank memes my dude'.encode()
+    password = 'ya hate to see it!@$'
+    data = encrypt(password, plaintext)
+    return decrypt(password, data)
 
 
 def get_available_nodes():

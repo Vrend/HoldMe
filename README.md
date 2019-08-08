@@ -9,6 +9,7 @@ Decentralized Storage - Inspired by Hivemind
 3. passlib
 4. eventlet
 5. flask-socketio
+6. pycryptodome
 
 ## How to Use
 
