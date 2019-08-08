@@ -48,7 +48,7 @@ def files():
             password = request.form['password']
             if file.filename == '' or name == '' or password == '':
                 return render_template('files.html')
-            push_file(name, password, file)
+            push_file(name, password, file, socketio)
             return render_template('files.html')
 
     file_id = request.args.get('id', '')
@@ -105,8 +105,10 @@ def handle_on_connect(res):
     data = res['id']
     if data == 'none':
         client_id = str(uuid.uuid1())
+        add_node(client_id, request.sid)
         emit('give_uid', client_id)
     else:
+        update_node(data, request.sid)
         print(data)
 
 

@@ -23,14 +23,14 @@ def base64_to_file(string):
     return base64.b64decode(string)
 
 
-def push_file(name, password, file):
+def push_file(name, password, file, socketio):
     print('Pushing file...')
     data = encrypt(password, file_to_base64(file))
     blocks = textwrap.wrap(data.decode(), BLOCK_SIZE)
 
     for block in blocks:
         print(block)
-        push_block(block, get_available_nodes())
+        push_block(block, get_available_nodes(), socketio)
 
 
 def rebuild_file(password, blocks):
@@ -49,11 +49,25 @@ def test_encryption_decryption():
 
 
 def get_available_nodes():
-    return []
+    r = redis.Redis()
+    return r.hget('active_nodes')
 
 
-def push_block(block, nodes):
+def add_node(uid, socket):
+    r = redis.Redis()
+    r.hset('nodes', uid, socket)
+
+
+def update_node(uid, socket):
+    r = redis.Redis()
+    r.hset('nodes', uid, socket)
+
+
+def push_block(block, nodes, socketio):
+    r = redis.Redis()
     for node in nodes:
+        sock = r.hget('nodes', node)
+        socketio.emit('add_block', block, room=sock)
         print('pushing block' + block + 'to node' + node)
 
 
