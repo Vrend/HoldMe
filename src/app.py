@@ -1,12 +1,19 @@
+import eventlet
+eventlet.monkey_patch()
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO, send, emit
 from authentication import *
 from database import *
+import threading
 import uuid
+import time
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='eventlet')
 lock = ''
+
+
+thread = None
 
 
 @app.route('/')
@@ -79,7 +86,12 @@ def handle_json(json):
 # Custom example
 @socketio.on('connect')
 def handle_connect():
+    global thread
     print('Client Socket SID: ' + request.sid)
+    if thread is None:
+        thread = threading.Thread(target=heartbeat)
+        thread.daemon = True
+        thread.start()
 
 
 @socketio.on('on_connect')
@@ -97,13 +109,16 @@ def handle_disconnect():
     print('Client Disconnected')
 
 
+def heartbeat():
+    while True:
+        time.sleep(5)
+        #print('Sending Heartbeat...')
+        socketio.emit('heartbeat')
+
+
 @socketio.on('heartbeat_resp')
 def handle_heartbeat_resp(json):
     handle_response(json)
-
-
-def heartbeat():
-    socketio.emit('heartbeat')
 
 
 @app.errorhandler(404)

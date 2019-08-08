@@ -15,6 +15,7 @@
         }
     });
     socket.on('heartbeat', function(){
+        console.log('Heartbeat received...');
         var obj = {
             blocks: {}
         };
@@ -29,6 +30,7 @@
                 obj.blocks[id] = hash;
             }
         }
+        console.log('Sending response...');
         socket.emit('heartbeat_resp', obj);
     });
     socket.on('add_block', function(data){
