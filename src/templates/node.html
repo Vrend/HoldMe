@@ -3,11 +3,16 @@
 {% block body %}
 <p>Node Page</p>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-<script src="{{url_from('static', 'md5-min.js')}}"></script>
+<script src="{{url_for('static', filename='md5-min.js')}}"></script>
 <script type="text/javascript" charset="utf-8">
-    var socket = io();
+    var socket = io({transports: ['websocket']});
     socket.on('connect', function() {
-        socket.emit('my event', {data: 'I\'m connected!'});
+        if(localStorage.getItem('id') === null) {
+            emit('on_connect', {'id': 'none' });
+        }
+        else {
+            emit('on_connect', {'id': localStorage.getItem('id')});
+        }
     });
     socket.on('heartbeat', function(){
         var obj = {
@@ -15,15 +20,20 @@
         };
         for(var i = 0; i < localStorage.length; i++){
             var id = localStorage.key(i);
-            var data = localStorage.getItem(id);
-            var hash = hex_md5(data);
-            obj.blocks[id] = hash;
+            if(id === 'id') {
+                obj.id = localStorage.getItem(id);
+            }
+            else {
+                var data = localStorage.getItem(id);
+                var hash = hex_md5(data);
+                obj.blocks[id] = hash;
+            }
         }
         socket.emit('heartbeat_resp', obj);
     });
     socket.on('add_block', function(data){
         var obj = JSON.parse(data);
-        localStorage.setItem(obj.id, obj.data)
+        localStorage.setItem(obj.id, obj.data);
     });
 </script>
 {% endblock %}

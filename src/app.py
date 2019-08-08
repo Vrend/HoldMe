@@ -76,9 +76,14 @@ def handle_json(json):
 
 
 # Custom example
-@socketio.on('connection')
-def handle_my_custom_event(json):
-    print('received json: ' + str(json))
+@socketio.on('connect')
+def handle_connect():
+    print('Client Socket SID: ' + request.sid)
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client Disconnected')
 
 
 @socketio.on('heartbeat_resp')
