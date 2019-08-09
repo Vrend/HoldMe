@@ -6,7 +6,7 @@ from passlib.hash import md5_crypt
 import pickle
 import time
 
-BLOCK_SIZE = 512
+BLOCK_SIZE = 1024
 
 OPTIMAL_NODES = 20
 
