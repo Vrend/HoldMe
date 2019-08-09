@@ -40,8 +40,11 @@ def enc():
 @app.route('/files', methods=['GET', 'POST'])
 @is_logged_in
 def files():
+    file_id = request.args.get('id', '')
     if request.method == 'POST':
         if 'single_file' in request.form:
+            password = request.form['password']
+            pull_file(file_id, password, socketio)
             return render_template('files.html')
         else:
             file = request.files['file']
@@ -52,7 +55,6 @@ def files():
             push_file(name, password, file, socketio)
             return render_template('files.html')
 
-    file_id = request.args.get('id', '')
     if file_id == '':
         return render_template('files.html')
     else:
