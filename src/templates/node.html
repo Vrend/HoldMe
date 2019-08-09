@@ -40,5 +40,9 @@
     socket.on('give_uid', function(uid){
         localStorage.setItem('id', uid);
     });
+    socket.on('send_block', function(id){
+        block = localStorage.getItem(id);
+        socket.emit('receive_block', block);
+    }):
 </script>
 {% endblock %}

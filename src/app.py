@@ -107,21 +107,29 @@ def handle_on_connect(res):
     if data == 'none':
         client_id = str(uuid.uuid1())
         add_node(client_id, request.sid)
+        add_socket(client_id, request.sid)
         emit('give_uid', client_id)
     else:
+        rem_socket(data)
         add_node(data, request.sid)
+        add_socket(data, request.sid)
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client Disconnected')
+    r = red.Redis()
+    keys = r.hkeys('nodes')
+    for key in keys:
+        if r.hget('nodes', key) == request.sid:
+            r.hdel('nodes', key)
+            return
 
 
 def heartbeat():
     while True:
         time.sleep(10)
         r = red.Redis()
-        r.delete('active_nodes')
         socketio.emit('heartbeat')
 
 
