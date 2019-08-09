@@ -1,7 +1,7 @@
 import redis
-import base64
 import textwrap
 from encryption import *
+import uuid
 
 BLOCK_SIZE = 512
 
@@ -29,8 +29,8 @@ def push_file(name, password, file, socketio):
     blocks = textwrap.wrap(data.decode(), BLOCK_SIZE)
 
     for block in blocks:
-        print(block)
-        push_block(block, 0, get_available_nodes(), socketio)
+        block_id = uuid.uuid1().hex
+        push_block(block, block_id, get_available_nodes(), socketio)
 
 
 def rebuild_file(password, blocks):
@@ -50,15 +50,13 @@ def test_encryption_decryption():
 
 def get_available_nodes():
     r = redis.Redis()
-    return r.get('active_nodes')
+    nodes = r.smembers('active_nodes')
+    if nodes is None:
+        return []
+    return nodes
 
 
 def add_node(uid, socket):
-    r = redis.Redis()
-    r.hset('nodes', uid, socket)
-
-
-def update_node(uid, socket):
     r = redis.Redis()
     r.hset('nodes', uid, socket)
 
@@ -67,11 +65,12 @@ def push_block(block, blockid, nodes, socketio):
     r = redis.Redis()
     for node in nodes:
         sock = r.hget('nodes', node)
-        socketio.emit('add_block', {'id': blockid, 'data': block}, room=sock)
-        print('pushing block' + block + 'to node' + node)
+        socketio.emit('add_block', {"id": blockid, "data": block}, room=sock.decode())
 
 
 def handle_response(res):
+    r = redis.Redis()
+    r.sadd('active_nodes', res['id'])
     blocks = res['blocks']
     for block_id, block_hash in blocks.items():
         print('Block ID: ' + block_id + ' Hash: ' + block_hash)

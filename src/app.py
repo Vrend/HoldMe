@@ -7,6 +7,7 @@ from database import *
 import threading
 import uuid
 import time
+import redis as red
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
@@ -108,8 +109,7 @@ def handle_on_connect(res):
         add_node(client_id, request.sid)
         emit('give_uid', client_id)
     else:
-        update_node(data, request.sid)
-        print(data)
+        add_node(data, request.sid)
 
 
 @socketio.on('disconnect')
@@ -119,14 +119,16 @@ def handle_disconnect():
 
 def heartbeat():
     while True:
-        time.sleep(5)
-        # print('Sending Heartbeat...')
+        time.sleep(10)
+        r = red.Redis()
+        r.delete('active_nodes')
         socketio.emit('heartbeat')
 
 
 @socketio.on('heartbeat_resp')
 def handle_heartbeat_resp(json):
-    handle_response(json)
+    if 'id' in json:
+        handle_response(json)
 
 
 @app.errorhandler(404)
