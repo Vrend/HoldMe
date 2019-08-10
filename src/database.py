@@ -149,3 +149,8 @@ def handle_response(res):
     for block_id, block_hash in blocks.items():
         #print('Block ID: ' + block_id + ' Hash: ' + block_hash)
         return
+
+
+def check_if_file_exists(file_id):
+    r = redis.Redis()
+    return r.exists('file-' + file_id) == 1

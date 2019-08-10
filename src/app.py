@@ -47,6 +47,8 @@ def files():
 
     if file_id == '':
         return render_template('files.html')
+    elif not check_if_file_exists(file_id):
+        return redirect(url_for('files'))
     else:
         return render_template('file.html', id=file_id)
 
