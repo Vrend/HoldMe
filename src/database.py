@@ -5,6 +5,7 @@ import redis
 from passlib.hash import md5_crypt
 import pickle
 import time
+import mimetypes
 
 BLOCK_SIZE = 1024
 
@@ -26,10 +27,14 @@ def base64_to_file(string):
     return base64.b64decode(string)
 
 
-def push_file(name, password, file, socketio):
+def push_file(name, password, file, filename, socketio):
     r = redis.Redis()
     print('Pushing file...')
-    plaintext = file_to_base64(file)
+    mimetype = mimetypes.MimeTypes().guess_type(filename)[0]
+    if mimetype is None:
+        mimetype = 'text/plain'
+    base = file_to_base64(file)
+    plaintext = filename.encode() + b'mimetype:' + mimetype.encode() + b'filedata:' + base
     data = encrypt(password, plaintext)
     blocks = textwrap.wrap(data.decode(), BLOCK_SIZE)
 
@@ -64,7 +69,12 @@ def pull_file(name, password, sio):
     redis_data = r.hgetall('file-'+name)
     blocks = pull_blocks(redis_data, sio)
     file = rebuild_file(password, blocks)
-    return base64_to_file(file)
+    plaintext = file.split(b'mimetype:')
+    name = plaintext[0].decode()
+    plaintext = plaintext[1].split(b'filedata:')
+    mime = plaintext[0].decode()
+    file = base64_to_file(plaintext[1])
+    return name, mime, file
 
 
 def pull_blocks(data, sio):
@@ -95,13 +105,6 @@ def pull_block(block_id, block_hash, nodes, sio):
                 return block
             else:
                 break
-
-
-def test_encryption_decryption():
-    plaintext = 'dank memes my dude'.encode()
-    password = 'ya hate to see it!@$'
-    data = encrypt(password, plaintext)
-    return decrypt(password, data)
 
 
 def get_available_nodes():

@@ -1,6 +1,6 @@
 import eventlet
 eventlet.monkey_patch()
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_file
 from flask_socketio import SocketIO, send, emit
 from authentication import *
 from database import *
@@ -8,12 +8,11 @@ import threading
 import uuid
 import time
 import redis as red
+import io
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
 lock = ''
-
-
 thread = None
 
 
@@ -32,11 +31,6 @@ def redis():
     return test_redis()
 
 
-@app.route('/enc')
-def enc():
-    return test_encryption_decryption()
-
-
 @app.route('/files', methods=['GET', 'POST'])
 @is_logged_in
 def files():
@@ -44,16 +38,16 @@ def files():
     if request.method == 'POST':
         if 'single_file' in request.form:
             password = request.form['password']
-            pull_file(file_id, password, socketio)
-            return render_template('files.html')
+            data = pull_file(file_id, password, socketio)
+            return send_file(io.BytesIO(data[2]), attachment_filename=data[0], mimetype=data[1])
         else:
             file = request.files['file']
             name = request.form['name']
             password = request.form['password']
             if file.filename == '' or name == '' or password == '':
                 return render_template('files.html')
-            push_file(name, password, file, socketio)
-            return render_template('files.html')
+            push_file(name, password, file, file.filename, socketio)
+            return redirect(url_for('files'))
 
     if file_id == '':
         return render_template('files.html')
