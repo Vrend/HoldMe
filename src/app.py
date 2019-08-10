@@ -9,6 +9,7 @@ import uuid
 import time
 import redis as red
 import io
+from passlib.hash import md5_crypt
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
@@ -24,11 +25,6 @@ def index():
 @app.route('/node')
 def node():
     return render_template('node.html')
-
-
-@app.route('/redis')
-def redis():
-    return test_redis()
 
 
 @app.route('/files', methods=['GET', 'POST'])
@@ -125,7 +121,6 @@ def handle_disconnect():
 def heartbeat():
     while True:
         time.sleep(10)
-        r = red.Redis()
         socketio.emit('heartbeat')
 
 
@@ -139,7 +134,12 @@ def handle_heartbeat_resp(json):
 def get_block(json):
     r = red.Redis()
     block = json['block']
-    r.set('block_data', block)
+    block_id = json['id']
+    block_hash = r.hget(block_id, 'hash')
+    if md5_crypt.verify(block, block_hash):
+        r.hset('temp_data', block_id, block)
+    else:
+        r.hset('temp_data', block_id, 'Block Not Found')
 
 
 @app.errorhandler(404)

@@ -6,17 +6,13 @@ from passlib.hash import md5_crypt
 import pickle
 import time
 import mimetypes
+import threading
 
 BLOCK_SIZE = 1024
 
 OPTIMAL_NODES = 20
 
 MINIMUM_NODES = 10
-
-
-def test_redis():
-    r = redis.Redis()
-    return str(r.ping())
 
 
 def file_to_base64(file):
@@ -55,8 +51,6 @@ def push_file(name, password, file, filename, socketio):
 def rebuild_file(password, blocks):
     master = ''
     for block in blocks:
-        # print('block before: ', block)
-        # print('block after: ', block.decode())
         master += block.decode()
     plaintext = decrypt(password, master.encode())
     return plaintext
@@ -84,27 +78,34 @@ def pull_blocks(data, sio):
     for i in range(blocks_num):
         r.set('block_data', '')
         block_id = data[('block'+str(i)).encode()]
-        block_hash = r.hget(block_id, 'hash')
         nodes = pickle.loads(r.hget(block_id, 'nodes'))
-        block = pull_block(block_id, block_hash, nodes, sio)
+        nodes_copy = nodes.copy()
+        t = threading.Thread(target=pull_block, args=(block_id, nodes_copy, sio))
+        t.start()
+    while len(r.hkeys('temp_data')) != blocks_num:
+        time.sleep(0.1)
+    for i in range(blocks_num):
+        block_id = data[('block'+str(i)).encode()]
+        block = r.hget('temp_data', block_id)
         blocks.insert(i, block)
+    r.delete('temp_data')
     return blocks
 
 
-def pull_block(block_id, block_hash, nodes, sio):
+def pull_block(block_id, nodes, sio):
     while True:
         r = redis.Redis()
         node_id = nodes.pop()
         socket = r.hget('nodes', node_id)
         sio.emit('send_block', block_id.decode(), room=socket)
         while True:
-            block = r.get('block_data')
-            if block == b'':
-                time.sleep(0.1)
-            elif md5_crypt.verify(block, block_hash):
-                return block
+            if r.hexists('temp_data', block_id):
+                if r.hget('temp_data', block_id) == b'Block Not Found':
+                    break
+                else:
+                    return
             else:
-                break
+                time.sleep(0.1)
 
 
 def get_available_nodes():
