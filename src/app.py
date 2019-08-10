@@ -27,6 +27,25 @@ def node():
     return render_template('node.html')
 
 
+@app.route('/delete', methods=['POST'])
+@is_logged_in
+def delete():
+    file_id = request.args.get('id', '')
+
+    if file_id == '' or not check_if_file_exists(file_id):
+        return redirect(url_for('files'))
+
+    delete_file(file_id, socketio)
+    return redirect(url_for('files'))
+
+
+@app.route('/deleteall', methods=['POST'])
+@is_logged_in
+def delete_all():
+    delete_files(socketio)
+    return redirect(url_for('files'))
+
+
 @app.route('/files', methods=['GET', 'POST'])
 @is_logged_in
 def files():

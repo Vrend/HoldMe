@@ -154,3 +154,28 @@ def handle_response(res):
 def check_if_file_exists(file_id):
     r = redis.Redis()
     return r.exists('file-' + file_id) == 1
+
+
+def delete_file(file_id, socketio):
+    r = redis.Redis()
+    file = r.hgetall('file-'+file_id)
+    for i in range(len(file)):
+        block_id = file[('block'+str(i)).encode()]
+        flush_block(block_id, socketio)
+        r.delete(block_id)
+    r.delete('file-'+file_id)
+
+
+def delete_files(socketio):
+    r = redis.Redis()
+    for file in r.scan_iter(match='file*'):
+        file_id = file.split('file-')[1]
+        delete_file(file_id, socketio)
+
+
+def flush_block(block_id, socketio):
+    r = redis.Redis()
+    nodes = pickle.loads(r.hget(block_id, 'nodes'))
+    for node in nodes:
+        sock = r.hget('nodes', node)
+        socketio.emit('flush_block', block_id, room=sock.decode())
