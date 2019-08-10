@@ -29,7 +29,8 @@ def base64_to_file(string):
 def push_file(name, password, file, socketio):
     r = redis.Redis()
     print('Pushing file...')
-    data = encrypt(password, file_to_base64(file))
+    plaintext = file_to_base64(file)
+    data = encrypt(password, plaintext)
     blocks = textwrap.wrap(data.decode(), BLOCK_SIZE)
 
     i = 0
@@ -49,9 +50,11 @@ def push_file(name, password, file, socketio):
 def rebuild_file(password, blocks):
     master = ''
     for block in blocks:
-        master.join(block)
+        # print('block before: ', block)
+        # print('block after: ', block.decode())
+        master += block.decode()
     plaintext = decrypt(password, master.encode())
-    return base64_to_file(plaintext)
+    return plaintext
 
 
 def pull_file(name, password, sio):
@@ -61,7 +64,7 @@ def pull_file(name, password, sio):
     redis_data = r.hgetall('file-'+name)
     blocks = pull_blocks(redis_data, sio)
     file = rebuild_file(password, blocks)
-    return file
+    return base64_to_file(file)
 
 
 def pull_blocks(data, sio):
@@ -69,7 +72,8 @@ def pull_blocks(data, sio):
     blocks = []
     blocks_num = len(data)
     for i in range(blocks_num):
-        block_id = data['block'+str(i)]
+        r.set('block_data', '')
+        block_id = data[('block'+str(i)).encode()]
         block_hash = r.hget(block_id, 'hash')
         nodes = pickle.loads(r.hget(block_id, 'nodes'))
         block = pull_block(block_id, block_hash, nodes, sio)
@@ -78,30 +82,19 @@ def pull_blocks(data, sio):
 
 
 def pull_block(block_id, block_hash, nodes, sio):
-    i = 0
-    block = ''
     while True:
         r = redis.Redis()
-        node_id = nodes[i]
+        node_id = nodes.pop()
         socket = r.hget('nodes', node_id)
-        sio.emit('send_block', block_id, room=socket)
-        wait = True
-        redo = False
-        @sio.on('receive_block')
-        def get_block(json):
-            nonlocal wait, redo, block
-            if md5_crypt.verify(json, block_hash):
-                block = json
-                wait = False
+        sio.emit('send_block', block_id.decode(), room=socket)
+        while True:
+            block = r.get('block_data')
+            if block == b'':
+                time.sleep(0.1)
+            elif md5_crypt.verify(block, block_hash):
+                return block
             else:
-                redo = True
-                wait = False
-        while wait:
-            time.sleep(0.1)
-        if not redo:
-            break
-        i += 1
-    return block
+                break
 
 
 def test_encryption_decryption():
@@ -132,7 +125,8 @@ def add_socket(uid, socket):
 def rem_socket(uid):
     r = redis.Redis()
     socket = r.hget('nodes', uid)
-    r.hdel('sockets', socket)
+    if socket is not None:
+        r.hdel('sockets', socket)
 
 
 def push_block(block, blockid, nodes, socketio):
@@ -149,4 +143,5 @@ def push_block(block, blockid, nodes, socketio):
 def handle_response(res):
     blocks = res['blocks']
     for block_id, block_hash in blocks.items():
-        print('Block ID: ' + block_id + ' Hash: ' + block_hash)
+        #print('Block ID: ' + block_id + ' Hash: ' + block_hash)
+        return

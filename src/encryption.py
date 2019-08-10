@@ -11,17 +11,18 @@ def encrypt(password, string):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
     ciphertext, tag = cipher.encrypt_and_digest(string)
-    pre_data = nonce + b':' + ciphertext + b':' + tag
+    pre_data = nonce + b'data:' + ciphertext + b'tag:' + tag
     data = base64.b64encode(pre_data)
     return data
 
 
 def decrypt(password, data):
     data_decoded = base64.b64decode(data)
-    args = data_decoded.split(b':')
-    nonce = args[0]
-    ciphertext = args[1]
-    tag = args[2]
+    split_one = data_decoded.split(b'data:')
+    nonce = split_one[0]
+    split_two = split_one[1].split(b'tag:')
+    ciphertext = split_two[0]
+    tag = split_two[1]
     key = PBKDF2(password, salt)
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     plaintext = cipher.decrypt(ciphertext)

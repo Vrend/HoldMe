@@ -141,6 +141,13 @@ def handle_heartbeat_resp(json):
         handle_response(json)
 
 
+@socketio.on('receive_block')
+def get_block(json):
+    r = red.Redis()
+    block = json['block']
+    r.set('block_data', block)
+
+
 @app.errorhandler(404)
 def handle_404(error):
     print(error)

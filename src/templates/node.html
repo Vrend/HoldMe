@@ -40,9 +40,12 @@
     socket.on('give_uid', function(uid){
         localStorage.setItem('id', uid);
     });
-    socket.on('send_block', function(id){
-        block = localStorage.getItem(id);
-        socket.emit('receive_block', block);
-    }):
+    socket.on('send_block', function(id) {
+        obj = {};
+        obj.id = id;
+        obj.block = localStorage.getItem(id);
+        console.log(obj);
+        socket.emit('receive_block', obj);
+    });
 </script>
 {% endblock %}
