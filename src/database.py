@@ -25,10 +25,9 @@ def base64_to_file(string):
 
 def push_file(name, password, file, filename, socketio):
     r = redis.Redis()
-    print('Pushing file...')
     mimetype = mimetypes.MimeTypes().guess_type(filename)[0]
     if mimetype is None:
-        mimetype = 'text/plain'
+        mimetype = 'application/octet-stream'
     base = file_to_base64(file)
     plaintext = filename.encode() + b'mimetype:' + mimetype.encode() + b'filedata:' + base
     data = encrypt(password, plaintext)
@@ -179,7 +178,7 @@ def delete_file(file_id, socketio):
 def delete_files(socketio):
     r = redis.Redis()
     for file in r.scan_iter(match='file*'):
-        file_id = file.split('file-')[1]
+        file_id = file.decode().split('file-')[1]
         delete_file(file_id, socketio)
 
 

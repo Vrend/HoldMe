@@ -3,18 +3,16 @@
 {% block body %}
     <br/>
     <br/>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
     <div class="jumbotron text-center">
+        <h1>Files</h1>
+        <br/>
         <table class="table table-striped">
             <tr>
                 <th>File Name</th>
                 <th></th>
                 <th></th>
                 <th></th>
-                <th></th>
+                <th class="text-right">Actions</th>
                 <th></th>
             </tr>
             {% for file in files %}
@@ -23,8 +21,8 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><a class="btn btn-primary" href="{{url_for('files', id=file)}}">Retrieve</a></td>
-                <td>
+                <td class="text-right"><a class="btn btn-primary pull-right" href="{{url_for('files', id=file)}}">Retrieve</a></td>
+                <td class="text-left">
                     <form method="post" action="{{url_for('delete', id=file)}}">
                         <div class="form-group">
                             <input type="hidden" name="_method" value="DELETE">
@@ -47,6 +45,16 @@
                 <input type="submit" class="btn btn-primary" value="Upload">
             </div>
         </form>
+        <hr>
+        <div class="input-group">
+            <a href="{{url_for('index')}}" class="btn btn-primary">Go Back</a>
+            <form class="form-inline ml-auto" method="post" action="{{url_for('delete_all')}}">
+                <div class="form-group">
+                    <input type="hidden" name="_method" value="DELETEALL">
+                    <input type="submit" value="Delete All" class="btn btn-danger">
+                </div>
+            </form>
+        </div>
     </div>
-    <a href="{{url_for('index')}}" class="btn btn-primary">Go Back</a>
+
 {% endblock %}

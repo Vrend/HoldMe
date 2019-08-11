@@ -56,7 +56,7 @@ def files():
             data = pull_file(file_id, password, socketio)
             if data == 'Bad Password':
                 return 'Bad Password'
-            return send_file(io.BytesIO(data[2]), attachment_filename=data[0], mimetype=data[1])
+            return send_file(io.BytesIO(data[2]), as_attachment=True, attachment_filename=data[0], mimetype=data[1])
         else:
             file = request.files['file']
             name = request.form['name']

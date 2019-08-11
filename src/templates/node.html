@@ -43,7 +43,6 @@
         obj = {};
         obj.id = id;
         obj.block = localStorage.getItem(id);
-        console.log(obj);
         socket.emit('receive_block', obj);
     });
     socket.on('flush_block', function(id) {
