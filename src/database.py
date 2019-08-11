@@ -63,6 +63,8 @@ def pull_file(name, password, sio):
     redis_data = r.hgetall('file-'+name)
     blocks = pull_blocks(redis_data, sio)
     file = rebuild_file(password, blocks)
+    if file == 'Bad Password':
+        return file
     plaintext = file.split(b'mimetype:')
     name = plaintext[0].decode()
     plaintext = plaintext[1].split(b'filedata:')
@@ -156,6 +158,14 @@ def check_if_file_exists(file_id):
     return r.exists('file-' + file_id) == 1
 
 
+def get_files():
+    files = []
+    r = redis.Redis()
+    for file in r.scan_iter(match='file*'):
+        files.append(file.decode().split('file-')[1])
+    return files
+
+
 def delete_file(file_id, socketio):
     r = redis.Redis()
     file = r.hgetall('file-'+file_id)
@@ -177,5 +187,6 @@ def flush_block(block_id, socketio):
     r = redis.Redis()
     nodes = pickle.loads(r.hget(block_id, 'nodes'))
     for node in nodes:
+        node = node.split('b\'')[1][:-1]
         sock = r.hget('nodes', node)
-        socketio.emit('flush_block', block_id, room=sock.decode())
+        socketio.emit('flush_block', block_id.decode(), room=sock.decode())

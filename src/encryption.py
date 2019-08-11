@@ -30,4 +30,4 @@ def decrypt(password, data):
         cipher.verify(tag)
         return plaintext
     except ValueError:
-        print("Bad Password")
+        return 'Bad Password'

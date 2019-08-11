@@ -54,18 +54,20 @@ def files():
         if 'single_file' in request.form:
             password = request.form['password']
             data = pull_file(file_id, password, socketio)
+            if data == 'Bad Password':
+                return 'Bad Password'
             return send_file(io.BytesIO(data[2]), attachment_filename=data[0], mimetype=data[1])
         else:
             file = request.files['file']
             name = request.form['name']
             password = request.form['password']
             if file.filename == '' or name == '' or password == '':
-                return render_template('files.html')
+                return render_template('files.html', files=get_files())
             push_file(name, password, file, file.filename, socketio)
             return redirect(url_for('files'))
 
     if file_id == '':
-        return render_template('files.html')
+        return render_template('files.html', files=get_files())
     elif not check_if_file_exists(file_id):
         return redirect(url_for('files'))
     else:

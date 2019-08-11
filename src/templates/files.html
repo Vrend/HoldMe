@@ -8,6 +8,34 @@
     <br/>
     <br/>
     <div class="jumbotron text-center">
+        <table class="table table-striped">
+            <tr>
+                <th>File Name</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            {% for file in files %}
+            <tr>
+                <td>{{file}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a class="btn btn-primary" href="{{url_for('files', id=file)}}">Retrieve</a></td>
+                <td>
+                    <form method="post" action="{{url_for('delete', id=file)}}">
+                        <div class="form-group">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <hr>
         <form enctype="multipart/form-data" method="post" action="">
             <div class="form-group">
                 <label>Name</label>
