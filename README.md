@@ -13,11 +13,20 @@ Decentralized Storage - Inspired by Hivemind
 
 ## How to Use
 
-Clone the repository and install redis
+1. Clone the repository, install the dependencies, and install redis
 
-Run redis with the command `redis-server HoldMe/redis.conf`
+2. Create a file named 'config' and fill it out (see section below)
 
-Then run `python3 app.py`
+3. Run start_redis.sh
+
+4. Run `python3 app.py`
+
+### Config file
+```
+1. Secret key (can be anything)
+2. Your authentication code (password to access file page)
+3. Enable debug mode (true or false)
+```
 
 ## License
 
