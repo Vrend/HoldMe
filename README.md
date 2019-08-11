@@ -15,9 +15,9 @@ Decentralized Storage - Inspired by Hivemind
 
 1. Clone the repository, install the dependencies, and install redis
 
-2. Create a file named 'config' and fill it out (see section below)
+2. Create a file named "config" and fill it out (see section below)
 
-3. Run start_redis.sh
+3. Run `start_redis.sh`
 
 4. Run `python3 app.py`
 
