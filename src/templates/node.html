@@ -4,7 +4,18 @@
 <p>Node Page</p>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8">
+    var timeout_check = 0;
     var socket = io({transports: ['websocket']});
+
+    function timeout() {
+        timeout_check += 1;
+        if(timeout_check === 5) {
+            console.log('Destroying node');
+            localStorage.clear();
+            socket.close();
+        }
+    }
+
     socket.on('connect', function() {
         if(localStorage.getItem('id') === null) {
             socket.emit('on_connect', {'id': 'none' });
@@ -49,5 +60,9 @@
     socket.on('flush_all', function() {
         localStorage.clear();
     });
+    socket.on('reconnect_error', timeout);
+    socket.on('connect_timeout', timeout);
+    socket.on('reconnect_failed', timeout);
+    socket.on('connect_error', timeout);
 </script>
 {% endblock %}
