@@ -17,6 +17,7 @@
     }
 
     socket.on('connect', function() {
+        timeout_check = 0;
         if(localStorage.getItem('id') === null) {
             socket.emit('on_connect', {'id': 'none' });
         }
