@@ -154,11 +154,11 @@ def heartbeat():
             block_id = block.decode()
             set_id = r.hget('confirm_blocks', block_id).decode()
             nodes = r.smembers(set_id)
+            pickled_nodes = pickle.dumps(nodes)
+            r.hset(block_id, 'nodes', pickled_nodes)
             if len(nodes) < MINIMUM_NODES:
                 t = threading.Thread(target=propagate_block, args=(block_id, len(nodes), socketio))
                 t.start()
-            nodes = pickle.dumps(nodes)
-            r.hset(block_id, 'nodes', nodes)
         r.delete('confirm_blocks')
 
 
