@@ -1,5 +1,5 @@
 # HoldMe
-Decentralized Storage - Inspired by Hivemind
+Decentralized Storage - Inspired by Hivemind, written in Python
 
 
 ## Dependencies
