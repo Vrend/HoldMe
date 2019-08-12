@@ -7,6 +7,7 @@ import pickle
 import time
 import mimetypes
 import threading
+import random
 
 BLOCK_SIZE = 1024
 
@@ -44,7 +45,7 @@ def push_file(name, password, file, filename, socketio):
         nodes = pickle.dumps(set())
         r.hset(block_id, 'nodes', nodes)
         i += 1
-        push_block(block, block_id, get_available_nodes(), socketio)
+        push_block(block, block_id, get_available_nodes(20), socketio)
 
 
 def rebuild_file(password, blocks):
@@ -96,9 +97,12 @@ def pull_blocks(data, sio):
 def pull_block(block_id, nodes, sio):
     while True:
         r = redis.Redis()
+        if len(nodes) == 0:
+            # print('No nodes available')
+            return
         node_id = nodes.pop()
         socket = r.hget('nodes', node_id)
-        sio.emit('send_block', block_id.decode(), room=socket)
+        sio.emit('send_block', block_id.decode(), room=socket.decode())
         while True:
             if r.hexists('temp_data', block_id):
                 if r.hget('temp_data', block_id) == b'Block Not Found':
@@ -109,12 +113,15 @@ def pull_block(block_id, nodes, sio):
                 time.sleep(0.1)
 
 
-def get_available_nodes():
+def get_available_nodes(count):
     r = redis.Redis()
     nodes = r.hkeys('nodes')
     if nodes is None:
         return []
-    return nodes
+    if len(nodes) < count:
+        count = len(nodes)
+    available_nodes = random.choices(nodes, k=count)
+    return available_nodes
 
 
 def add_node(uid, socket):
@@ -139,6 +146,9 @@ def push_block(block, blockid, nodes, socketio):
     for node in nodes:
         # Add node to the list of who's holding the block
         mems = pickle.loads(r.hget(blockid, 'nodes'))
+        if node in mems:
+            # print('Node already contains block')
+            continue
         mems.add(str(node))
         r.hset(blockid, 'nodes', pickle.dumps(mems))
         sock = r.hget('nodes', node)
@@ -147,9 +157,29 @@ def push_block(block, blockid, nodes, socketio):
 
 def handle_response(res):
     blocks = res['blocks']
-    for block_id, block_hash in blocks.items():
-        #print('Block ID: ' + block_id + ' Hash: ' + block_hash)
-        return
+    r = redis.Redis()
+    for block_id in blocks:
+        confirm = r.get('check').decode()
+        if confirm == 'false':
+            return
+        set_id = r.hget('confirm_blocks', block_id)
+        if set_id is None:
+            set_id = uuid.uuid1().hex
+            r.hset('confirm_blocks', block_id, set_id)
+        else:
+            set_id = set_id.decode()
+        r.sadd(set_id, res['id'])
+
+
+def propagate_block(block_id, count, sio):
+    r = redis.Redis()
+    # print('Propagating block: ', block_id)
+    needed = OPTIMAL_NODES - count
+    nodes = get_available_nodes(needed)
+    good_nodes = pickle.loads(r.hget(block_id, 'nodes'))
+    pull_block(block_id.encode(), good_nodes, sio)
+    block = r.hget('temp_data', block_id)
+    push_block(block, block_id, nodes, sio)
 
 
 def check_if_file_exists(file_id):
@@ -177,9 +207,8 @@ def delete_file(file_id, socketio):
 
 def delete_files(socketio):
     r = redis.Redis()
-    for file in r.scan_iter(match='file*'):
-        file_id = file.decode().split('file-')[1]
-        delete_file(file_id, socketio)
+    socketio.emit('flush_all')
+    r.flushall()
 
 
 def flush_block(block_id, socketio):

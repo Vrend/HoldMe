@@ -3,7 +3,6 @@
 {% block body %}
 <p>Node Page</p>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-<script src="{{url_for('static', filename='md5-min.js')}}"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io({transports: ['websocket']});
     socket.on('connect', function() {
@@ -16,20 +15,18 @@
     });
     socket.on('heartbeat', function(){
         console.log('Heartbeat');
-        var obj = {
-            blocks: {}
-        };
+        var obj = {};
+        var blocks = [];
         for(var i = 0; i < localStorage.length; i++){
             var id = localStorage.key(i);
             if(id === 'id') {
                 obj.id = localStorage.getItem(id);
             }
             else {
-                var data = localStorage.getItem(id);
-                var hash = hex_md5(data);
-                obj.blocks[id] = hash;
+                blocks.push(id);
             }
         }
+        obj.blocks = blocks;
         socket.emit('heartbeat_resp', obj);
     });
     socket.on('add_block', function(obj){
@@ -40,6 +37,7 @@
         localStorage.setItem('id', uid);
     });
     socket.on('send_block', function(id) {
+        console.log('sending block');
         obj = {};
         obj.id = id;
         obj.block = localStorage.getItem(id);
@@ -47,6 +45,9 @@
     });
     socket.on('flush_block', function(id) {
         localStorage.removeItem(id);
+    });
+    socket.on('flush_all', function() {
+        localStorage.clear();
     });
 </script>
 {% endblock %}

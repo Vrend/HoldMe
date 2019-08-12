@@ -43,7 +43,7 @@ def delete():
 @is_logged_in
 def delete_all():
     delete_files(socketio)
-    return redirect(url_for('files'))
+    return redirect(url_for('deauthenticate'))
 
 
 @app.route('/files', methods=['GET', 'POST'])
@@ -142,9 +142,24 @@ def handle_disconnect():
 
 
 def heartbeat():
+    r = red.Redis()
     while True:
-        time.sleep(10)
+        time.sleep(5)
+        r.set('check', 'true')
         socketio.emit('heartbeat')
+        time.sleep(5)
+        r.set('check', 'false')
+        blocks = r.hkeys('confirm_blocks')
+        for block in blocks:
+            block_id = block.decode()
+            set_id = r.hget('confirm_blocks', block_id).decode()
+            nodes = r.smembers(set_id)
+            if len(nodes) < MINIMUM_NODES:
+                t = threading.Thread(target=propagate_block, args=(block_id, len(nodes), socketio))
+                t.start()
+            nodes = pickle.dumps(nodes)
+            r.hset(block_id, 'nodes', nodes)
+        r.delete('confirm_blocks')
 
 
 @socketio.on('heartbeat_resp')
