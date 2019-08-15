@@ -98,10 +98,12 @@ def pull_block(block_id, nodes, sio):
     while True:
         r = redis.Redis()
         if len(nodes) == 0:
-            # print('No nodes available')
+            print('No nodes available')
             return
         node_id = nodes.pop()
-        socket = r.hget('nodes', node_id)
+        socket = r.hget('nodes', node_id.decode())
+        if socket is None:
+            continue
         sio.emit('send_block', block_id.decode(), room=socket.decode())
         while True:
             if r.hexists('temp_data', block_id):
@@ -215,6 +217,6 @@ def flush_block(block_id, socketio):
     r = redis.Redis()
     nodes = pickle.loads(r.hget(block_id, 'nodes'))
     for node in nodes:
-        node = node.split('b\'')[1][:-1]
+        node = node.decode()
         sock = r.hget('nodes', node)
         socketio.emit('flush_block', block_id.decode(), room=sock.decode())
