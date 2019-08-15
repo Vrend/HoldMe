@@ -4,12 +4,13 @@ Decentralized Storage - Inspired by Hivemind, written in Python
 
 ## Dependencies
 
-1. flask
-2. redis-py
-3. passlib
-4. eventlet
-5. flask-socketio
-6. pycryptodome
+1. Python 3
+2. flask
+3. redis-py
+4. passlib
+5. eventlet
+6. flask-socketio
+7. pycryptodome
 
 ## How to Use
 
@@ -17,7 +18,7 @@ Decentralized Storage - Inspired by Hivemind, written in Python
 
 2. Create a file named "config" and fill it out (see section below)
 
-3. Run `start_redis.sh`
+3. Run redis using the provided configuration 'redis.conf'
 
 4. Run `python3 app.py`
 
