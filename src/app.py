@@ -176,6 +176,8 @@ def get_block(json):
     block = json['block']
     block_id = json['id']
     block_hash = r.hget(block_id, 'hash')
+    if block_hash is None:
+        return
     if md5_crypt.verify(block, block_hash):
         r.hset('temp_data', block_id, block)
     else:
