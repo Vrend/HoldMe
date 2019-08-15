@@ -208,4 +208,7 @@ if __name__ == '__main__':
     config = get_config()
     app.secret_key = config[0]
     lock = config[1].strip()
+    if not test_redis():
+        print('Connection with redis failed. Make sure redis is running.')
+        sys.exit(1)
     socketio.run(app, debug=config[2])

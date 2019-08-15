@@ -16,6 +16,15 @@ OPTIMAL_NODES = 20
 MINIMUM_NODES = 10
 
 
+def test_redis():
+    r = redis.Redis()
+    try:
+        r.ping()
+        return True
+    except redis.ConnectionError:
+        return False
+
+
 def file_to_base64(file):
     return base64.b64encode(file.read())
 
@@ -45,7 +54,8 @@ def push_file(name, password, file, filename, socketio):
         nodes = pickle.dumps(set())
         r.hset(block_id, 'nodes', nodes)
         i += 1
-        push_block(block, block_id, get_available_nodes(20), socketio)
+        t = threading.Thread(target=push_block, args=(block, block_id, get_available_nodes(20), socketio))
+        t.start()
 
 
 def rebuild_file(password, blocks):
@@ -108,6 +118,7 @@ def pull_block(block_id, nodes, sio):
         while True:
             if r.hexists('temp_data', block_id):
                 if r.hget('temp_data', block_id) == b'Block Not Found':
+                    r.hdel('temp_data', block_id)
                     break
                 else:
                     return
@@ -129,6 +140,7 @@ def pull_block_propagate(block_id, nodes, sio):
         while True:
             if r.exists('temp_data_'+block_id.decode()):
                 if r.get('temp_data_'+block_id.decode()) == b'Block Not Found':
+                    r.delete('temp_data_'+block_id.decode())
                     break
                 else:
                     return
@@ -241,6 +253,5 @@ def flush_block(block_id, socketio):
     r = redis.Redis()
     nodes = pickle.loads(r.hget(block_id, 'nodes'))
     for node in nodes:
-        node = node.decode()
         sock = r.hget('nodes', node)
         socketio.emit('flush_block', block_id.decode(), room=sock.decode())
