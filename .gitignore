@@ -5,3 +5,4 @@ venv/
 # Files
 config
 *.sh
+!run.sh

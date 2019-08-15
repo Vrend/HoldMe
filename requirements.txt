@@ -1,0 +1,6 @@
+flask
+redis
+passlib
+eventlet
+flask-socketio
+pycryptodome

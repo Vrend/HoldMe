@@ -12,6 +12,12 @@ Decentralized Storage - Inspired by Hivemind, written in Python
 6. flask-socketio
 7. pycryptodome
 
+## Docker Demo
+
+This app has a docker image (vrend/holdme)
+
+Run it with this command `docker run -d -p your_port:5000 vrend/holdme`
+
 ## How to Use
 
 1. Clone the repository, install the dependencies, and install redis
