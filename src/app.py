@@ -166,6 +166,8 @@ def heartbeat():
 def handle_heartbeat_resp(json):
     if 'id' in json:
         handle_response(json)
+    else:
+        emit('force_disconnect', room=request.sid)
 
 
 @socketio.on('receive_block')
@@ -178,6 +180,20 @@ def get_block(json):
         r.hset('temp_data', block_id, block)
     else:
         r.hset('temp_data', block_id, 'Block Not Found')
+
+
+@socketio.on('receive_block_propagate')
+def get_block_propagate(json):
+    r = red.Redis()
+    block = json['block']
+    block_id = json['id']
+    block_hash = r.hget(block_id, 'hash')
+    if block_hash is None:
+        return
+    if md5_crypt.verify(block, block_hash):
+        r.set('temp_data_'+block_id, block)
+    else:
+        r.set('temp_data_'+block_id, 'Block Not Found')
 
 
 @app.errorhandler(404)

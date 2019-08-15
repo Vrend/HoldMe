@@ -9,7 +9,7 @@
 
     function timeout() {
         timeout_check += 1;
-        if(timeout_check === 5) {
+        if(timeout_check === 15) {
             console.log('Destroying node');
             localStorage.clear();
             socket.close();
@@ -55,11 +55,21 @@
         obj.block = localStorage.getItem(id);
         socket.emit('receive_block', obj);
     });
+    socket.on('send_block_propagate', function(id) {
+        console.log('sending block');
+        obj = {};
+        obj.id = id;
+        obj.block = localStorage.getItem(id);
+        socket.emit('receive_block_propagate', obj);
+    });
     socket.on('flush_block', function(id) {
         localStorage.removeItem(id);
     });
     socket.on('flush_all', function() {
         localStorage.clear();
+    });
+    socket.on('force_disconnect', function() {
+        socket.close();
     });
     socket.on('reconnect_error', timeout);
     socket.on('connect_timeout', timeout);

@@ -101,13 +101,34 @@ def pull_block(block_id, nodes, sio):
             print('No nodes available')
             return
         node_id = nodes.pop()
-        socket = r.hget('nodes', node_id.decode())
+        socket = r.hget('nodes', node_id)
         if socket is None:
             continue
         sio.emit('send_block', block_id.decode(), room=socket.decode())
         while True:
             if r.hexists('temp_data', block_id):
                 if r.hget('temp_data', block_id) == b'Block Not Found':
+                    break
+                else:
+                    return
+            else:
+                time.sleep(0.1)
+
+
+def pull_block_propagate(block_id, nodes, sio):
+    while True:
+        r = redis.Redis()
+        if len(nodes) == 0:
+            print('No nodes available')
+            return
+        node_id = nodes.pop()
+        socket = r.hget('nodes', node_id)
+        if socket is None:
+            continue
+        sio.emit('send_block_propagate', block_id.decode(), room=socket.decode())
+        while True:
+            if r.exists('temp_data_'+block_id.decode()):
+                if r.get('temp_data_'+block_id.decode()) == b'Block Not Found':
                     break
                 else:
                     return
@@ -145,6 +166,8 @@ def rem_socket(uid):
 
 def push_block(block, blockid, nodes, socketio):
     r = redis.Redis()
+    if block is None:
+        return
     for node in nodes:
         # Add node to the list of who's holding the block
         mems = pickle.loads(r.hget(blockid, 'nodes'))
@@ -179,8 +202,9 @@ def propagate_block(block_id, count, sio):
     needed = OPTIMAL_NODES - count
     nodes = get_available_nodes(needed)
     good_nodes = pickle.loads(r.hget(block_id, 'nodes'))
-    pull_block(block_id.encode(), good_nodes, sio)
+    pull_block_propagate(block_id.encode(), good_nodes, sio)
     block = r.hget('temp_data', block_id)
+    r.delete('temp_data_'+block_id)
     push_block(block, block_id, nodes, sio)
 
 
