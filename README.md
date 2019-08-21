@@ -18,6 +18,8 @@ This app has a docker image (vrend/holdme)
 
 Run it with this command `docker run -d -p your_port:5000 vrend/holdme`
 
+The Authentication code is "holdme"
+
 ## How to Use
 
 1. Clone the repository, install the dependencies, and install redis
