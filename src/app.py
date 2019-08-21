@@ -211,4 +211,4 @@ if __name__ == '__main__':
     if not test_redis():
         print('Connection with redis failed. Make sure redis is running.')
         sys.exit(1)
-    socketio.run(app, debug=config[2])
+    socketio.run(app, debug=config[2], host='0.0.0.0')
