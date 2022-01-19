@@ -1,0 +1,8 @@
+# Folders
+.idea/
+venv/
+
+# Files
+config
+*.sh
+!run.sh

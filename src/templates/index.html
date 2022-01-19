@@ -1,0 +1,24 @@
+{% extends 'core.html' %}
+
+{% block body %}
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="jumbotron text-center">
+        <h1>Welcome to HoldMe</h1>
+        <br/>
+        <p class="lead">A Decentralized Storage System Using Redis</p>
+        <br/>
+        {% if session.logged_in %}
+        <p>
+            <a href="{{url_for('files')}}" class="btn btn-primary">View Files</a>
+            &nbsp;&nbsp;
+            <a href="{{url_for('deauthenticate')}}" class="btn btn-danger">Deauthenticate</a>
+        </p>
+        {% else %}
+        <a href="{{url_for('authenticate')}}" class="btn btn-success">Authenticate</a>
+        {% endif %}
+    </div>
+{% endblock %}

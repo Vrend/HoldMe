@@ -1,0 +1,60 @@
+{% extends 'core.html' %}
+
+{% block body %}
+    <br/>
+    <br/>
+    <div class="jumbotron text-center">
+        <h1>Files</h1>
+        <br/>
+        <table class="table table-striped">
+            <tr>
+                <th>File Name</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="text-right">Actions</th>
+                <th></th>
+            </tr>
+            {% for file in files %}
+            <tr>
+                <td>{{file}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="text-right"><a class="btn btn-primary pull-right" href="{{url_for('files', id=file)}}" target="_blank">Retrieve</a></td>
+                <td class="text-left">
+                    <form method="post" action="{{url_for('delete', id=file)}}">
+                        <div class="form-group">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="submit" value="Delete" class="btn btn-danger">
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <hr>
+        <form enctype="multipart/form-data" method="post" action="">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="name"/>
+                <label>Password</label>
+                <input type="password" name="password"/>
+                <input type="file" name="file"/>
+                <input type="hidden" name="multi_files"/>
+                <input type="submit" class="btn btn-primary" value="Upload">
+            </div>
+        </form>
+        <hr>
+        <div class="input-group">
+            <a href="{{url_for('index')}}" class="btn btn-primary">Go Back</a>
+            <form class="form-inline ml-auto" method="post" action="{{url_for('delete_all')}}">
+                <div class="form-group">
+                    <input type="hidden" name="_method" value="DELETEALL">
+                    <input type="submit" value="Delete All" class="btn btn-danger">
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

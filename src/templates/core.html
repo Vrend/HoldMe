@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HoldMe</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+        <link rel="shortcut icon" href="{{url_for('static', filename='favicon.ico')}}?v=2"/>
+    </head>
+    <body>
+        <br/>
+        <div class="container">
+            {% block body %} {% endblock %}
+        </div>
+    </body>
+</html>

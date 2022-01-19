@@ -1,0 +1,24 @@
+{% extends 'core.html' %}
+
+{% block body %}
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="jumbotron text-center">
+        <h1>Enter your authentication code</h1>
+        <br/>
+        <form method="POST" action="">
+            <div class="form-group">
+                <label>Authentication Code</label>
+                <input type="password" name="password" class="form-control">
+            </div>
+            <p>
+                <input type="submit" class="btn btn-success" value="Submit">
+                &nbsp;
+                <a class="btn btn-danger" href="{{url_for('index')}}">Cancel</a>
+            </p>
+        </form>
+    </div>
+{% endblock %}

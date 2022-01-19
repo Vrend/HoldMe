@@ -1,0 +1,18 @@
+{% extends 'core.html' %}
+
+{% block body %}
+    <div class="jumbotron text-center">
+        <h1>Retrieve File: {{id}}</h1>
+        <form method="post" action="">
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control"/>
+            <input type="hidden" name="single_file"/>
+        </div>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Retrieve">
+            <a class="btn btn-danger" href="{{url_for('files')}}">Go Back</a>
+        </p>
+    </form>
+    </div>
+{% endblock %}
